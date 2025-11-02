@@ -7,7 +7,7 @@ let db:Database.Database | null = null;
 
 export function getDataBase(){
     if (!db){
-        db = new Database(path.join(process.cwd(),'database/sqlite/sqlite.db'));
+        db = new Database(path.join(process.cwd(),'database/sqlite/sqlite.db'),{ verbose: console.log });
         db.pragma('journal_mode=WAL');
     }
     return db;

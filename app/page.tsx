@@ -11,6 +11,8 @@ import MainView from "@/components/view/main";
 import EventPopover from "@/components/event/popUp";
 import { RootState } from "@/redux/store";
 import { setEvents } from "@/redux/calender/eventSlice";
+import { CalendarEventType } from "@/redux/calender/eventSlice";
+import dayjs from "dayjs";
 
 export default function Home() {
   const dispatch = useAppDispatch();
@@ -48,13 +50,23 @@ export default function Home() {
       }
 
       const data = await response.json();
+      console.log('Raw data from API:', data);
       
-      // Dispatch to your Redux store
-      dispatch(setEvents(data.events || []));
+      // Transform events: convert date string to dayjs
+      const transformedEvents = (data.events || []).map((event: any) => ({
+        ...event,
+        date: dayjs(event.date) // Convert string to dayjs
+      }));
+      
+      console.log('Transformed events:', transformedEvents);
+      console.log('First event date:', transformedEvents[0]?.date);
+      console.log('Is dayjs?', dayjs.isDayjs(transformedEvents[0]?.date));
+    
+      // Dispatch ONLY the transformed events
+      dispatch(setEvents(transformedEvents));
       
     } catch (err) {
       console.error('Error fetching events:', err);
-
     }
   };
 
