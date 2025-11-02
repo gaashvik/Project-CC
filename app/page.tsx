@@ -1,7 +1,31 @@
+'use client'
 import Image from "next/image";
+import { useUser } from '@auth0/nextjs-auth0';
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import Header from "@/components/header/header";
 
 export default function Home() {
+  const { user,isLoading,error } = useUser();
+  const router = useRouter();
+  useEffect(() => {
+    if (!isLoading && !user) {
+      router.push('/auth/login');
+    }
+  }, [user, isLoading, router]);
+
+  if (isLoading){
+    return <div>Loading...</div>
+  }
+
+   if (error) {
+    return <div>User is  {error.message}</div>;
+  }
+
+
   return (
+    <>
+    <Header/>
     <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
       <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
         <Image
@@ -61,5 +85,6 @@ export default function Home() {
         </div>
       </main>
     </div>
+    </>
   );
 }
