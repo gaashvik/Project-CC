@@ -9,10 +9,11 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useAppDispatch,useAppSelector } from "@/redux/hooks";
 import {setDate,setMonth} from "../../redux/calender/dateSlice"
 import { toggleSidebar } from "@/redux/calender/sidebarSlice";
+import dayjs from "dayjs";
 // import { setView } from "@/redux/calender/viewSlice";
 
 import { RootState } from "@/redux/store";
-import dayjs from "dayjs";
+// import dayjs from "dayjs";
 
 export default function HeaderLeft() {
   const todaysDate = dayjs();
@@ -24,14 +25,16 @@ export default function HeaderLeft() {
   const handleTodayClick = () => {
     switch (selectedView) {
       case "month":
-        setMonth(dayjs().month());
+        dispatch(setMonth(dayjs().month()));
+        dispatch(setDate(todaysDate));
         break;
       case "week":
-        setDate(todaysDate);
+        dispatch(setDate(todaysDate));
+         dispatch(setMonth(dayjs().month()));
         break;
       case "day":
-        setDate(todaysDate);
-        setMonth(dayjs().month());
+        dispatch(setDate(todaysDate));
+        dispatch(setMonth(dayjs().month()));
         break;
       default:
         break;
@@ -41,13 +44,28 @@ export default function HeaderLeft() {
   const handlePrevClick = () => {
     switch (selectedView) {
       case "month":
-        setMonth(userSelectedMonthIndex - 1);
+        const newMonthIndex = userSelectedMonthIndex - 1
+        dispatch(setMonth(newMonthIndex));
+        dispatch(setDate(dayjs(new Date(dayjs().year(),newMonthIndex,1))));
         break;
       case "week":
-        setDate(userSelectedDate.subtract(1, "week"));
+        const original_month = userSelectedMonthIndex;
+        const prev_date = userSelectedDate.subtract(1, "week");
+        const prev_month = prev_date.month();
+        dispatch(setDate(prev_date));
+        if ((original_month)%12!=prev_month){
+          dispatch(setMonth(original_month-1));
+        }
         break;
       case "day":
-        setDate(userSelectedDate.subtract(1, "day"));
+        const original_month_day = userSelectedMonthIndex;
+        const prev_date_by_day = userSelectedDate.subtract(1, "day");
+        const prev_month_day = prev_date_by_day.month();
+        dispatch(setDate(prev_date_by_day));
+        if ((original_month_day)%12!=prev_month_day){
+          dispatch(setMonth(original_month_day-1));
+        }
+
         break;
       default:
         break;
@@ -57,13 +75,29 @@ export default function HeaderLeft() {
   const handleNextClick = () => {
     switch (selectedView) {
       case "month":
-        setMonth(userSelectedMonthIndex + 1);
+        const newMonthIndex = userSelectedMonthIndex + 1
+        dispatch(setMonth(newMonthIndex));
+        dispatch(setDate(dayjs(new Date(dayjs().year(),newMonthIndex,1))));
         break;
       case "week":
-        setDate(userSelectedDate.add(1, "week"));
+        const original_month = userSelectedMonthIndex;
+        const next_date = userSelectedDate.add(1, "week");
+        const next_month = next_date.month();
+        // console.log(next_date.toDate());
+        dispatch(setDate(next_date));
+        if ((original_month)%12!=next_month){
+          dispatch(setMonth(original_month+1));
+        }
         break;
       case "day":
-        setDate(userSelectedDate.add(1, "day"));
+        const original_month_day = userSelectedMonthIndex;
+        const next_date_by_day = userSelectedDate.add(1, "week");
+        const next_month_day = next_date_by_day.month();
+        dispatch(setDate(userSelectedDate.add(1, "day")));
+        if ((original_month_day)%12!=next_month_day){
+          dispatch(setMonth(original_month_day+1));
+        }
+
         break;
       default:
         break;
@@ -107,7 +141,6 @@ export default function HeaderLeft() {
         />
       </div>
 
-      {/* Current Month and Year Display */}
       <h1 className="hidden text-xl lg:block">
         {dayjs(new Date(dayjs().year(), userSelectedMonthIndex)).format(
           "MMMM YYYY",
