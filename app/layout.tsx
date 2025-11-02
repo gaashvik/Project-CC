@@ -1,6 +1,5 @@
-
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { Geist, Geist_Mono } from "next/font/google";
 import { Auth0Provider } from "@auth0/nextjs-auth0";
 import { Providers } from "../redux/provider";
 
