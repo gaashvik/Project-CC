@@ -2,8 +2,11 @@
 import { cn } from "@/lib/utils";
 import dayjs from "dayjs";
 import React from "react";
-import { useAppDispatch } from "@/redux/hooks";
-// import { EventRenderer } from "./event-renderer";
+import { useAppDispatch,useAppSelector } from "@/redux/hooks";
+import { openPopOver } from "@/redux/calender/eventSlice";
+import { setDate } from "@/redux/calender/dateSlice";
+import { EventRenderer } from "../../event/renderer";
+import { RootState } from "@/redux/store";
 
 
 export default function MonthViewBox({
@@ -14,6 +17,8 @@ export default function MonthViewBox({
   rowIndex: number;
 }) {
 //   const { openPopover, events } = useEventStore();
+const events = useAppSelector((state: RootState) => state.event.events);
+const dispatch = useAppDispatch();
 //   const { setDate } = useDateStore();
 
   if (!day) {
@@ -26,11 +31,11 @@ export default function MonthViewBox({
 
   const isToday = day.format("DD-MM-YY") === dayjs().format("DD-MM-YY");
 
-//   const handleClick = (e: React.MouseEvent) => {
-//     e.preventDefault();
-//     setDate(day);
-//     openPopover();
-//   };
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    dispatch(setDate(day));
+    dispatch(openPopOver());
+  };
 
   return (
     <div
@@ -38,6 +43,8 @@ export default function MonthViewBox({
         "group relative flex flex-col items-center gap-y-2 border",
         "transition-all hover:bg-violet-50",
       )}
+            onClick={handleClick}
+
     >
       <div className="flex flex-col items-center">
         {rowIndex === 0 && (
@@ -55,7 +62,7 @@ export default function MonthViewBox({
           {isFirstDayOfMonth ? day.format("MMM D") : day.format("D")}
         </h4>
       </div>
-      {/* <EventRenderer date={day} view="month" events={events} /> */}
+      <EventRenderer date={day} view="month" events={events} />
     </div>
   );
 }

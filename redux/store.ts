@@ -3,6 +3,7 @@ import authReducer from "./auth/authSlice";
 import dateReducer from "./calender/dateSlice";
 import viewReducer from "./calender/viewSlice";
 import sidebarReducer from "./calender/sidebarSlice";
+import eventReducer from "./calender/eventSlice"
 import storage from "redux-persist/lib/storage";
 import { persistReducer, persistStore } from "redux-persist";
 
@@ -17,7 +18,8 @@ const rootReducer = combineReducers({
   auth: authReducer,
   view:viewReducer,
   date:dateReducer,
-  sidebar:sidebarReducer
+  sidebar:sidebarReducer,
+  event:eventReducer
 });
 
 
