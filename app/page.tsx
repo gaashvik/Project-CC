@@ -53,7 +53,7 @@ export default function Home() {
       console.log('Raw data from API:', data);
       
       // Transform events: convert date string to dayjs
-      const transformedEvents = (data.events || []).map((event: any) => ({
+      const transformedEvents = (data.events || []).map((event: CalendarEventType) => ({
         ...event,
         date: dayjs(event.date) // Convert string to dayjs
       }));

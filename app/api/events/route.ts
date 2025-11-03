@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getDataBase } from '@/database/db';
 import { auth0 } from '@/lib/auth0';
+import Error from 'next/error';
 
 // GET all events for authenticated user
 export const GET = async function GET(request: Request) {
@@ -24,10 +25,10 @@ export const GET = async function GET(request: Request) {
 
     return NextResponse.json({ events }, { status: 200 });
 
-  } catch (error: any) {
-    console.error('GET /api/events error:', error);
+  } catch (err) {
+    console.error('GET /api/events error:', err);
     return NextResponse.json(
-      { error: 'Failed to fetch events', details: error.message },
+      { error: 'Failed to fetch events', details: err },
       { status: 500 }
     );
   }
@@ -67,20 +68,14 @@ export const POST = async function POST(request: Request) {
       { status: 201 }
     );
 
-  } catch (error: any) {
-    console.error('POST /api/events error:', error);
-    
-    if (error.message.includes('UNIQUE constraint')) {
-      return NextResponse.json(
-        { error: 'An event already exists at this time slot' },
-        { status: 409 }
-      );
-    }
+  } catch (err) {
+    console.error('POST /api/events error:', err);
     
     return NextResponse.json(
-      { error: 'Failed to create event', details: error.message },
+      { error: 'Failed to create event', details: err },
       { status: 500 }
     );
-  }
+  
   // DO NOT close db here - it's a singleton
+}
 };
