@@ -5,14 +5,13 @@ import path from 'path';
 
 let db:Database.Database | null = null;
 
-export function getDataBase(){
-    if (!db){
-        db = new Database(path.join(process.cwd(),'database/sqlite/sqlite.db'),{ verbose: console.log });
-        db.pragma('journal_mode=WAL');
-    }
-    return db;
-}
-
+export const getDataBase = () => {
+  if (!db) {
+    const dbPath = path.join(process.cwd(), "data", "sqlite.db");
+    db = new Database(dbPath);
+  }
+  return db;
+};
 export function initializeDataBase(sqlScriptPath: string){
     const db = getDataBase();
 
