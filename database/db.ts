@@ -7,7 +7,7 @@ let db:Database.Database | null = null;
 
 export const getDataBase = () => {
   if (!db) {
-    const dbPath = path.join(process.cwd(), "data", "sqlite.db");
+    const dbPath = path.join(process.cwd(), "database", "sqlite.db");
     db = new Database(dbPath);
   }
   return db;
