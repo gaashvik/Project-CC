@@ -4,6 +4,8 @@ import SideBarCalendar from "./mySidebarCalender";
 // import { useToggleSideBarStore } from "@/lib/store";
 import { useAppSelector } from "@/redux/hooks";
 import { RootState } from "@/redux/store";
+import Create from "./create"
+import Search from "./search"
 
 export default function SideBar() {
 
@@ -15,7 +17,9 @@ export default function SideBar() {
         !isOpen && "lg:hidden",
       )}
     >
+      <Create/>
       <SideBarCalendar />
+      <Search/>
     </aside>
   );
 }
