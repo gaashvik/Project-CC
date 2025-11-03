@@ -1,28 +1,39 @@
-import Database from "better-sqlite3"
-import { error } from "console";
-import { readFileSync } from "fs"
-import path from 'path';
+import { createClient, Client } from "@libsql/client";
+import { readFileSync } from "fs";
+import { loadEnvConfig } from '@next/env';
+import {event,trigger} from "./sql_scripts/create"
 
-let db:Database.Database | null = null;
+loadEnvConfig(process.cwd());
 
-export const getDataBase = () => {
+let db: Client | null = null;
+
+export const getDatabase = () => {
   if (!db) {
-    const dbPath = path.join(process.cwd(), "database", "sqlite.db");
-    db = new Database(dbPath);
+    db = createClient({
+      url: process.env.TURSO_DATABASE_URL!,
+      authToken: process.env.TURSO_AUTH_TOKEN!,
+    });
   }
   return db;
 };
-export function initializeDataBase(sqlScriptPath: string){
-    const db = getDataBase();
 
+export async function initializeDatabase() {
+  const db = getDatabase();
 
-    try{
-        const sqlScript = readFileSync(sqlScriptPath,'utf-8');
-        db.exec(sqlScript);
-        console.log('Database initialized successfully');
-    }
-    catch(err){
-        console.log("DB intialization failed:",err);
-        throw error;
-    }
+  try {
+    await db.execute(event);
+    await db.execute(trigger);
+    console.log("Database initialized successfully");
+  } catch (err) {
+    console.error("DB initialization failed:", err);
+    throw err;
+  }
+}
+
+// Helper function to close the connection when needed
+export async function closeDatabase() {
+  if (db) {
+    db.close();
+    db = null;
+  }
 }

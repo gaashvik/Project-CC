@@ -1,10 +1,9 @@
 import { NextResponse } from 'next/server';
-import { getDataBase } from '@/database/db';
+import { getDatabase } from '@/database/db';
 import { auth0 } from '@/lib/auth0';
-import Error from 'next/error';
 
 // GET all events for authenticated user
-export const GET = async function GET(request: Request) {
+export async function GET(request: Request) {
   try {
     const session = await auth0.getSession();
     const userId = session?.user.sub;
@@ -13,7 +12,7 @@ export const GET = async function GET(request: Request) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
 
-    const db = getDataBase();
+    const db = getDatabase();
 
     const query = `
       SELECT * FROM events
@@ -21,22 +20,26 @@ export const GET = async function GET(request: Request) {
       ORDER BY date, from_time
     `;
 
-    const events = db.prepare(query).all(userId);
+    // Turso uses async execute() instead of prepare().all()
+    const result = await db.execute({
+      sql: query,
+      args: [userId],
+    });
 
-    return NextResponse.json({ events }, { status: 200 });
+    return NextResponse.json({ events: result.rows }, { status: 200 });
 
   } catch (err) {
     console.error('GET /api/events error:', err);
     return NextResponse.json(
-      { error: 'Failed to fetch events', details: err },
+      { error: 'Failed to fetch events', details: err instanceof Error ? err.message : 'Unknown error' },
       { status: 500 }
     );
   }
-  // DO NOT close db here - it's a singleton
-};
+}
 
 // POST new event for authenticated user
-export const POST = async function POST(request: Request) {
+// POST new event for authenticated user
+export async function POST(request: Request) {
   try {
     const session = await auth0.getSession();
     const userId = session?.user.sub;
@@ -45,7 +48,7 @@ export const POST = async function POST(request: Request) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
 
-    const db = getDataBase();
+    const db = getDatabase();
 
     const { type, date, title, description, from_time, to_time } = await request.json();
 
@@ -61,10 +64,17 @@ export const POST = async function POST(request: Request) {
       VALUES (?, ?, ?, ?, ?, ?, ?)
     `;
 
-    const result = db.prepare(query).run(userId, type, date, title, description || '', from_time, to_time);
+    const result = await db.execute({
+      sql: query,
+      args: [userId, type, date, title, description || '', from_time, to_time],
+    });
 
+    // Convert BigInt to string before returning
     return NextResponse.json(
-      { id: result.lastInsertRowid, message: 'Event created successfully' },
+      { 
+        id: result.lastInsertRowid?.toString(), // Convert BigInt to string
+        message: 'Event created successfully' 
+      },
       { status: 201 }
     );
 
@@ -72,10 +82,117 @@ export const POST = async function POST(request: Request) {
     console.error('POST /api/events error:', err);
     
     return NextResponse.json(
-      { error: 'Failed to create event', details: err },
+      { error: 'Failed to create event', details: err instanceof Error ? err.message : 'Unknown error' },
       { status: 500 }
     );
-  
-  // DO NOT close db here - it's a singleton
+  }
 }
-};
+
+
+// DELETE event for authenticated user
+export async function DELETE(request: Request) {
+  try {
+    const session = await auth0.getSession();
+    const userId = session?.user.sub;
+
+    if (!userId) {
+      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    }
+
+    const { searchParams } = new URL(request.url);
+    const eventId = searchParams.get('id');
+
+    if (!eventId) {
+      return NextResponse.json(
+        { error: 'Event ID is required' },
+        { status: 400 }
+      );
+    }
+
+    const db = getDatabase();
+
+    // Ensure user owns this event before deleting
+    const query = `
+      DELETE FROM events 
+      WHERE id = ? AND user_id = ?
+    `;
+
+    const result = await db.execute({
+      sql: query,
+      args: [eventId, userId],
+    });
+
+    if (result.rowsAffected === 0) {
+      return NextResponse.json(
+        { error: 'Event not found or unauthorized' },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json(
+      { message: 'Event deleted successfully' },
+      { status: 200 }
+    );
+
+  } catch (err) {
+    console.error('DELETE /api/events error:', err);
+    return NextResponse.json(
+      { error: 'Failed to delete event', details: err instanceof Error ? err.message : 'Unknown error' },
+      { status: 500 }
+    );
+  }
+}
+
+// PUT update event for authenticated user
+export async function PUT(request: Request) {
+  try {
+    const session = await auth0.getSession();
+    const userId = session?.user.sub;
+
+    if (!userId) {
+      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    }
+
+    const { id, type, date, title, description, from_time, to_time } = await request.json();
+
+    if (!id || !type || !date || !title || !from_time || !to_time) {
+      return NextResponse.json(
+        { error: 'Missing required fields' },
+        { status: 400 }
+      );
+    }
+
+    const db = getDatabase();
+
+    // Ensure user owns this event before updating
+    const query = `
+      UPDATE events 
+      SET type = ?, date = ?, title = ?, description = ?, from_time = ?, to_time = ?, updated_at = CURRENT_TIMESTAMP
+      WHERE id = ? AND user_id = ?
+    `;
+
+    const result = await db.execute({
+      sql: query,
+      args: [type, date, title, description || '', from_time, to_time, id, userId],
+    });
+
+    if (result.rowsAffected === 0) {
+      return NextResponse.json(
+        { error: 'Event not found or unauthorized' },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json(
+      { message: 'Event updated successfully' },
+      { status: 200 }
+    );
+
+  } catch (err) {
+    console.error('PUT /api/events error:', err);
+    return NextResponse.json(
+      { error: 'Failed to update event', details: err instanceof Error ? err.message : 'Unknown error' },
+      { status: 500 }
+    );
+  }
+}

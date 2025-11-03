@@ -112,7 +112,6 @@ export default function EventPopover({
         setTimeout(() => {
           resetForm();
           onClose();
-          window.location.reload();
         }, 1500);
       } catch (err) {
         setError("An unexpected error occurred. Please try again.");
