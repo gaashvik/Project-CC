@@ -1,6 +1,6 @@
 # 📅 Modern Calendar App
 
-> A sleek, full-stack calendar application built with **Next.js**, **Auth0**, and **Prisma** — designed for intuitive event management and a Google Calendar–inspired experience.
+> A sleek, full-stack calendar application built with **Next.js**, **Auth0** — designed for intuitive event management and a Google Calendar–inspired experience.
 
 ![Calendar App Preview](./images/image1.png)
 
@@ -48,8 +48,8 @@ It offers a secure authentication system, real-time event CRUD operations, and a
 | Layer | Technologies |
 |-------|---------------|
 | **Frontend** | Next.js 14, React, TypeScript, Tailwind CSS |
-| **Backend** | Next.js API Routes, Prisma ORM |
-| **Database** | PostgreSQL |
+| **Backend** | Next.js API Routes |
+| **Database** | TursoDB |
 | **Authentication** | Auth0, NextAuth.js |
 | **UI Components** | Radix UI, Shadcn/ui |
 | **Date Handling** | Day.js |
