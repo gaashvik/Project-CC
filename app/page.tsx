@@ -13,12 +13,15 @@ import { RootState } from "@/redux/store";
 import { setEvents } from "@/redux/calender/eventSlice";
 import { CalendarEventType } from "@/redux/calender/eventSlice";
 import dayjs from "dayjs";
+import { EventSummaryPopover } from "@/components/event/summary";
+import { closeEventSummary } from "@/redux/calender/eventSlice";
 
 export default function Home() {
   const dispatch = useAppDispatch();
   const { user, isLoading, error } = useUser();
   const { isPopoverOpen } = useAppSelector((state: RootState) => state.event);
   const { userSelectedDate } = useAppSelector((state: RootState) => state.date);
+   const { isEventSummaryOpen,selectedEvent } = useAppSelector((state: RootState) => state.event);
 
   const router = useRouter();
 
@@ -110,6 +113,14 @@ export default function Home() {
               date={userSelectedDate.format("YYYY-MM-DD")}
             />
           )}
+
+          {isEventSummaryOpen && selectedEvent && (
+        <EventSummaryPopover
+          isOpen={isEventSummaryOpen}
+          onClose={()=>dispatch(closeEventSummary())}
+          event={selectedEvent}
+        />
+      )}
         </div>
       </div>
     </>

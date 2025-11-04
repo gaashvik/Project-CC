@@ -7,13 +7,16 @@ import React, { useEffect, useState } from "react";
 import { ScrollArea } from "../ui/scroll-area";
 import { getHours, isCurrentDay } from "@/lib/getTime";
 import { RootState } from "@/redux/store";
-// import { EventRenderer } from "./event-renderer";
+import { EventRenderer } from "../event/renderer";
+import {openPopOver} from "../../redux/calender/eventSlice"
 
 
 export default function DayView() {
   const [currentTime, setCurrentTime] = useState(dayjs());
   const dispatch = useAppDispatch();
-//   const { openPopover, events } = useEventStore();
+
+  // const { openPopover, events } = useEventStore();
+  const {events} = useAppSelector((state:RootState)=>state.event)
   const { userSelectedDate} = useAppSelector((state:RootState)=>state.date);
 
   useEffect(() => {
@@ -67,14 +70,14 @@ export default function DayView() {
                 className="relative flex h-16 cursor-pointer flex-col items-center gap-y-2 border-b border-gray-300 hover:bg-gray-100"
                 onClick={() => {
                 dispatch(setDate(userSelectedDate.hour(hour.hour())));
-                //   openPopover();
+                  dispatch(openPopOver());
                 }}
               >
-                {/* <EventRenderer
+                <EventRenderer
                   events={events}
                   date={userSelectedDate.hour(hour.hour())}
                   view="day"
-                /> */}
+                />
               </div>
             ))}
 

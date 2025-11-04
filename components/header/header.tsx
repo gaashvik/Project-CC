@@ -1,18 +1,48 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useTransition } from "react"
 import HeaderLeft from "./headerLeft"
 import HeaderRight from "./headerRight"
 
 export default function Header() {
   const [searchQuery, setSearchQuery] = useState("")
   const [isFocused, setIsFocused] = useState(false)
+  const [isPending,startTransition] = useTransition();
+   const [error, setError] = useState<string | null>(null);
+    const [success, setSuccess] = useState<boolean>(false);
 
   const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault()
-    // TODO: Connect to your Langgraph agent here
-    console.log("Agent search query:", searchQuery)
-  }
+   e.preventDefault();
+    setError(null);
+    setSuccess(false);
+
+    startTransition(async () => {
+      try {
+        const response = await fetch("/api/agent/query", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            prompt:searchQuery
+          }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          setError(data.error || "Failed to create event");
+          return;
+        }
+
+        setSuccess(true);
+        setTimeout(() => {
+          setSearchQuery('');
+        }, 1500);
+      } catch (err) {
+        setError("An unexpected error occurred. Please try again.");
+      }
+  })};
 
   return (
     <div className="mx-3 flex items-center justify-between gap-4 py-4">

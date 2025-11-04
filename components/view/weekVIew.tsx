@@ -7,13 +7,15 @@ import dayjs from "dayjs";
 import React, { useEffect, useState } from "react";
 import { ScrollArea } from "../ui/scroll-area";
 import { RootState } from "@/redux/store";
-// import { EventRenderer } from "./event-renderer";
+import { EventRenderer } from "../event/renderer";
+import { openPopOver } from "@/redux/calender/eventSlice";
 
 
 export default function WeekView() {
   const [currentTime, setCurrentTime] = useState(dayjs());
   const dispatch = useAppDispatch();
 //   const { openPopover, events } = useEventStore();
+  const { events } = useAppSelector((state:RootState)=>state.event);
 
   const { userSelectedDate } = useAppSelector((state:RootState)=>state.date);
 
@@ -83,14 +85,14 @@ export default function WeekView() {
                       className="relative flex h-16 cursor-pointer flex-col items-center gap-y-2 border-b border-gray-300 hover:bg-gray-100"
                       onClick={() => {
                         dispatch(setDate(dayDate.hour(hour.hour())));
-                        // openPopover();
+                        dispatch(openPopOver());
                       }}
                     >
-                      {/* <EventRenderer
+                      <EventRenderer
                         events={events}
                         date={dayDate.hour(hour.hour())}
                         view="week"
-                      /> */}
+                      />
                     </div>
                   ))}
                   {/* Current time indicator */}

@@ -48,8 +48,8 @@ const eventSlice = createSlice({
             state.selectedEvent=event;
         },
         closeEventSummary:(state)=>{
-            const isEventSummaryOpen=false;
-            const selectedEvent = null;
+             state.isEventSummaryOpen=false;
+             state.selectedEvent = null;
 
         }
     }
